@@ -41,7 +41,9 @@ class Ignitor:
         timeout: float = 120.0,
     ) -> None:
         self.groups = tuple(groups)
-        self.recipe_module = recipe_module or os.environ.get("ORCH_RECIPE")
+        self.recipe_module = recipe_module
+        if self.recipe_module in (None, "__main__"):
+            self.recipe_module = os.environ.get("ORCH_RECIPE")
         if not self.recipe_module:
             raise ValueError("recipe_module is required for role subprocesses")
         self.timeout = timeout

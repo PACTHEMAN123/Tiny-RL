@@ -34,7 +34,7 @@ def _torchrun_command(args: argparse.Namespace, nproc: int) -> list[str]:
     return [
         sys.executable,
         "-m",
-        "torch.distributed.run",
+        "orch.torchrun",
         "--nnodes",
         str(args.nnodes),
         "--node-rank",

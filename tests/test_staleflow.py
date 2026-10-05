@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import unittest
-import importlib.util
 import json
 import subprocess
 import sys
@@ -152,10 +151,6 @@ class TrajectoryServerTest(unittest.TestCase):
 
 
 class StaleFlowEndToEndTest(unittest.TestCase):
-    @unittest.skipUnless(
-        importlib.util.find_spec("importlib_metadata"),
-        "local torchrun is missing its importlib_metadata dependency",
-    )
     def test_spmd_launch_runs_disaggregated_grpo(self) -> None:
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
