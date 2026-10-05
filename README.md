@@ -81,9 +81,33 @@ python3 scripts/launch.py \
 count and launches one SPMD ignitor per card. It does not dispatch rollout or train
 steps. Role processes communicate directly over the endpoints derived from topology.
 
+## Full-model smoke run
+
+The 16-card smoke recipe loads and keeps the complete 40-layer
+DeepSeek-V4.1-Flash checkpoint resident in the trainer replica. Its rollout,
+inference output, and optimizer step remain fake, so this validates orch topology,
+role ownership, StaleFlow data flow, and real distributed model placement without
+paying for a forward/backward pass.
+
+```bash
+python3 scripts/launch.py \
+  --recipe recipes.staleflow_grpo_full_model_16gpu \
+  --nnodes 4 --node-rank <0..3> \
+  --master-addr <node-0-address> --master-port 29500 \
+  --nproc-per-node 4 --runtime-dir /shared/run/path
+```
+
+The defaults expect the checkpoint at
+`/mnt/fuse/deepseek-ai/DeepSeek-V4.1-Flash` and the model implementation in a
+sibling `Tiny-DSV41` checkout. Override them with `ORCH_MODEL_PATH` and
+`ORCH_DSV41_ROOT`. Successful runs write model placement evidence to
+`full_model.json` and include it under `training` in `result.json`.
+
 ## Current backends
 
-Inference and training are toy engines; PS, trajectory, coordinator, rollout, and
-trainer are real independent role processes executing the StaleFlow protocol. Engine,
-parameter storage, trajectory storage, and transport boundaries are explicit so a
-model backend can replace the toy engines without changing the algorithm roles.
+The default recipes use toy engines. The full-model smoke recipe adds a real
+distributed checkpoint loader with fake compute. PS, trajectory, coordinator,
+rollout, and trainer remain independent role processes executing the StaleFlow
+protocol. Engine, parameter storage, trajectory storage, and transport boundaries
+are explicit so production backends can replace them without changing algorithm
+roles.

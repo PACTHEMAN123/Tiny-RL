@@ -47,7 +47,7 @@ class JsonRpcClient:
         except urllib.error.HTTPError as exc:
             message = exc.read().decode("utf-8", errors="replace")
             raise RpcError(f"RPC {method!r} failed: {message}") from exc
-        except (urllib.error.URLError, TimeoutError) as exc:
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
             raise RpcError(f"RPC {method!r} could not reach {self.endpoint}") from exc
         if not result.get("ok"):
             raise RpcError(f"RPC {method!r} failed: {result.get('error', 'unknown error')}")

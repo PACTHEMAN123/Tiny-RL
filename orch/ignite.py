@@ -183,6 +183,7 @@ class Ignitor:
             "rollout_coordinator": JsonRpcClient(
                 self.topology.role("rollout_coordinator")[0].endpoint
             ).call("snapshot"),
+            "training": worker_statuses[training.name].get("details", {}),
             "topology": {
                 "world_size": len(self.topology.gpus),
                 "services": [

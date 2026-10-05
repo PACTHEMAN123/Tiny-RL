@@ -4,12 +4,14 @@ import unittest
 
 from orch import (
     ColumnQueue,
+    CpuInferenceServiceConfig,
     Ignitor,
     InferenceServiceConfig,
     ParameterServerServiceConfig,
     RolloutCoordinatorServiceConfig,
     RolloutServiceConfig,
     ServiceGroup,
+    SpmdTrainingServiceConfig,
     ToyInferenceEngine,
     ToyTrainingEngine,
     TrajectoryServerServiceConfig,
@@ -60,6 +62,29 @@ class TopologyTest(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "colocation"):
             build_topology((group,), (0,))
+
+    def test_cpu_inference_leaves_every_card_for_spmd_training(self) -> None:
+        groups = (
+            ServiceGroup(
+                id="inference",
+                config=CpuInferenceServiceConfig(ToyInferenceEngine),
+                n_replicas=2,
+                n_gpus_per_replica=0,
+            ),
+            ServiceGroup(
+                id="trainer",
+                config=SpmdTrainingServiceConfig(ToyTrainingEngine, 2, 1),
+                n_gpus_per_replica=3,
+            ),
+        )
+
+        topology = build_topology(groups, (0, 1, 2))
+
+        self.assertEqual(topology.role("inference")[0].gpu_ids, ())
+        trainer = topology.role("training")[0]
+        self.assertEqual(trainer.gpu_ids, (0, 1, 2))
+        self.assertEqual(trainer.dist_port, 43000)
+        self.assertTrue(trainer.config.launch_on_all_ranks)
 
 
 class ColumnQueueTest(unittest.TestCase):

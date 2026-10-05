@@ -46,6 +46,15 @@ class TrainingEngine(ABC):
     def step(self, samples: Sequence[Mapping[str, Any]]) -> TrainResult:
         raise NotImplementedError
 
+    def snapshot(self) -> Mapping[str, Any]:
+        return {
+            "weight_version": self.weight_version,
+            "backend": type(self).__name__,
+        }
+
+    def close(self) -> None:
+        pass
+
 
 class ToyInferenceEngine(InferenceEngine):
     """Deterministic fake engine used by the runnable example and tests."""

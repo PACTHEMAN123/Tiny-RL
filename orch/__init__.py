@@ -1,11 +1,13 @@
 from .config import (
     GRPO_FIELDS,
+    CpuInferenceServiceConfig,
     InferenceServiceConfig,
     ParameterServerServiceConfig,
     RolloutCoordinatorServiceConfig,
     RolloutServiceConfig,
     ServiceConfig,
     ServiceGroup,
+    SpmdTrainingServiceConfig,
     TrajectoryServerServiceConfig,
     TrainingServiceConfig,
 )
@@ -27,6 +29,7 @@ from .engine import (
     TrainResult,
     TrainingEngine,
 )
+from .full_model import DeepSeekV41LoadOnlyEngine
 from .ignite import Ignitor, RunResult
 from .ps import (
     BufferSnapshot,
@@ -53,6 +56,8 @@ __all__ = [
     "BufferStatus",
     "ColumnQueue",
     "CommandType",
+    "CpuInferenceServiceConfig",
+    "DeepSeekV41LoadOnlyEngine",
     "CoordinatorCommand",
     "CoordinatorSnapshot",
     "EntryCategory",
@@ -83,6 +88,7 @@ __all__ = [
     "ServiceConfig",
     "ServiceGroup",
     "ServiceInfo",
+    "SpmdTrainingServiceConfig",
     "StalenessInventory",
     "Topology",
     "ToyInferenceEngine",

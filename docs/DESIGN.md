@@ -124,7 +124,8 @@ Rollout 和 trainer 可并发推进，中央没有逐 step 驱动逻辑。
 - 单 trainer 和单 logical PSManager；
 - 每个 rollout replica 绑定一个独立 inference replica；
 - 固定 group-count batch；
-- toy inference/training engine，参数和 trajectory backend 尚未持久化；
+- 默认 recipe 使用 toy inference/training engine；16 卡 smoke recipe 会真实加载并常驻
+  完整 40 层模型，但 forward/backward 和参数更新仍为 fake；
 - JSON/HTTP 是当前最小跨节点 transport，不适合传输生产规模 tensor；
 - 不包含 lease timeout、复制和故障恢复；
 - 不包含 offload、colocation 或同步训练模式。

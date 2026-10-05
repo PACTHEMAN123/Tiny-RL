@@ -26,6 +26,7 @@ class ServiceInfo:
     replica_index: int
     host: str
     endpoint_port: int
+    dist_port: int
     replica_gpus: tuple[GPU, ...]
     wait_until: tuple[str, ...]
     config: ServiceConfig
@@ -152,6 +153,7 @@ def build_topology(
                     replica_index=replica_index,
                     host=host,
                     endpoint_port=group.config.endpoint_port_base + endpoint_index,
+                    dist_port=43000 + endpoint_index,
                     replica_gpus=replica_gpus,
                     wait_until=group.wait_until,
                     config=group.config,

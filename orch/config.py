@@ -28,6 +28,7 @@ class ServiceConfig:
     service_cls: ClassVar[str]
     uses_gpu: ClassVar[bool]
     endpoint_port_base: ClassVar[int]
+    launch_on_all_ranks: ClassVar[bool] = False
 
 
 @dataclass(frozen=True)
@@ -38,6 +39,13 @@ class InferenceServiceConfig(ServiceConfig):
     service_cls: ClassVar[str] = "orch.service:InferenceService"
     uses_gpu: ClassVar[bool] = True
     endpoint_port_base: ClassVar[int] = 32000
+
+
+@dataclass(frozen=True)
+class CpuInferenceServiceConfig(InferenceServiceConfig):
+    """A fake inference backend that does not claim accelerator cards."""
+
+    uses_gpu: ClassVar[bool] = False
 
 
 @dataclass(frozen=True)
@@ -58,6 +66,13 @@ class TrainingServiceConfig(ServiceConfig):
             raise ValueError("batch_size must be positive")
         if self.max_steps <= 0:
             raise ValueError("max_steps must be positive")
+
+
+@dataclass(frozen=True)
+class SpmdTrainingServiceConfig(TrainingServiceConfig):
+    """A trainer whose engine is constructed by every card in its replica."""
+
+    launch_on_all_ranks: ClassVar[bool] = True
 
 
 @dataclass(frozen=True)
