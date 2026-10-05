@@ -75,7 +75,7 @@ class Ignitor:
                 self._start_rollout_services()
             _barrier(dist, world)
 
-            summary = self._wait_for_completion(rank)
+            summary = self._wait_for_completion(rank, dist, world)
             _barrier(dist, world)
             return RunResult(self.topology, summary)
         finally:
@@ -125,13 +125,27 @@ class Ignitor:
         service.wait_for_ready(self.timeout)
         self.services.append(service)
 
-    def _wait_for_completion(self, rank: int) -> dict[str, Any] | None:
+    def _wait_for_completion(
+        self, rank: int, dist: Any, world: int
+    ) -> dict[str, Any] | None:
+        assert self.topology is not None
+        assert self.runtime_dir is not None
+        summary = self._monitor_completion() if rank == 0 else None
+        if world > 1:
+            completed = [summary]
+            dist.broadcast_object_list(completed, src=0)
+            summary = completed[0]
+        return summary if rank == 0 else None
+
+    def _monitor_completion(self) -> dict[str, Any]:
         assert self.topology is not None
         assert self.runtime_dir is not None
         training = self.topology.role("training")[0]
         config = training.config
         assert isinstance(config, TrainingServiceConfig)
-        target_version = config.max_steps
+        parameter_config = self.topology.role("parameter_server")[0].config
+        assert isinstance(parameter_config, ParameterServerServiceConfig)
+        target_version = parameter_config.initial_version + config.max_steps
         ps = PSRpcClient(self.topology.role("parameter_server")[0].endpoint)
         deadline = time.monotonic() + self.timeout
 
@@ -161,8 +175,6 @@ class Ignitor:
                 )
             time.sleep(0.05)
 
-        if rank != 0:
-            return None
         summary = {
             "parameter_server": ps.snapshot(),
             "trajectory_server": JsonRpcClient(
